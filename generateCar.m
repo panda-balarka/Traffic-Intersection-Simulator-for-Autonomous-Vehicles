@@ -1,4 +1,4 @@
-function car = generateCar(Lane,ID,IntersectionBounds,laneWidth,minSpeed,maxSpeed,time,method)
+function car = generateCar(Lane,ID,IntersectionBounds,laneWidth,minSpeed,maxSpeed,time,method,CarLength)
 xb1 = IntersectionBounds.xb1;
 xb2 = IntersectionBounds.xb2;
 xb3 = IntersectionBounds.xb3;
@@ -30,7 +30,8 @@ car.receiveSpeed = 0;
 car.receivePosition = 0;
 car.IMWidth = 0;
 car.accStop = 0;
-
+randIdx = randi(length(CarLength),1);
+car.length = CarLength(randIdx);
 
 if (Lane == 1)
     car.position.x = xb1 ;

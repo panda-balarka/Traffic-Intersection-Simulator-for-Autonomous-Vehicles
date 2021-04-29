@@ -1,4 +1,4 @@
-function VehicleList = ACC(VehicleList,CarLength,amin)
+function VehicleList = ACC(VehicleList,amin)
 % f = front car
 % r = rear car
 % DistanceThreshold = 20 + CarLength/2;
@@ -14,7 +14,7 @@ for i = 1:length(VehicleList)-1
         LaneF = VehicleList(j).lane;
         distance = sqrt((xF-xR)^2+(yF-yR)^2);
         reachTime = -(vR-vF)/amin;
-        reachDistance = 0.5*amin*reachTime^2+vR*reachTime + CarLength;
+        reachDistance = 0.5*amin*reachTime^2+vR*reachTime + VehicleList(i).length;
         if (LaneR == LaneF) && (distance < reachDistance)
             VehicleList(i).desiredSpeed = vF;
         end

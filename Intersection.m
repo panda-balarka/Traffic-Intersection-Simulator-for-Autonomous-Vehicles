@@ -6,7 +6,7 @@ clear all;
 close all;
 % v = VideoWriter('mohi.avi');          % for video capturing
 % open(v);                              % for video capturing
-rng(4444);                                % load random number generator with seed = 4444;
+rng(444);                                % load random number generator with seed = 4444;
 % Parameters
 SimulationTime = 400;       % Seconds
 timer = 60;     % traffic light timer period
@@ -32,10 +32,23 @@ TransmitLine = 100;
 TurnSpace = 2;
 %% Print parameters
 printStep = 2;
-printLabel = 1;         %% no print = 0, print ID = 1, print Speed = 2;
+printLabel = 2;         %% no print = 0, print ID = 1, print Speed = 2;
 print3D = 0;            %% 3D = 1, 2D = 0;
+%% Intersection Manager
+method = 'Crossroads';
+% method = 'RIM';
+% method = 'TrafficLight';
+projEnable = 1;  %% flag to enable CPS Project IM algorithms and simulation
+ComputationSpeedFactor = 10;
+RequestedVehiclesList = [];
+Vmax = 15;
+Vmin = 2;
 %% Car Parameters
-CarLength = 6*1;
+if projEnable == 1
+    CarLength = [4*1,6*1,8*1];  %% Different vehicle length consideration in Project
+else
+    CarLength = 6*1;
+end
 CarWidth = 2;
 L = 5;
 amax = 5;
@@ -45,21 +58,13 @@ maxSpeed = 15;
 CarGenerationDuration = SimulationTime - 100;
 %% Network
 Log = 1;            % 1 for logging all packets
-%% Intersection Manager
-% method = 'Crossroads';
-% method = 'RIM';
-method = 'TrafficLight';
-ComputationSpeedFactor = 10;
-RequestedVehiclesList = [];
-Vmax = 15;
-Vmin = 2;
 %% Simulation
 count = 1;
 WCRTD = 0.5; %WORST CASE ROUND-TRIP DELAY (Seconds)
 WCND = 0.1; %WORST-CASE NETWORK DELAY (Seconds)
 time = 0;
 ID = 0;
-Distancethreshold = sqrt((CarLength/2)^2 + (CarWidth/2)^2) + 0.1;
+Distancethreshold = sqrt((max(CarLength)/2)^2 + (max(CarWidth)/2)^2) + 0.1;
 failureCheck = 1;
 VehicleList = [];
 Network = [];
@@ -91,7 +96,7 @@ while (time < SimulationTime)
     for Lane = 1 : NumberOfRoads * NumberOfLanesPerRoad
         if (time >= GeneratedCarTimeStamp(Lane) && time < CarGenerationDuration)
             ID = ID + 1;
-            VehicleList = [VehicleList; generateCar(Lane,ID,IntersectionBounds,laneWidth,minSpeed,maxSpeed,time,method)];
+            VehicleList = [VehicleList; generateCar(Lane,ID,IntersectionBounds,laneWidth,minSpeed,maxSpeed,time,method,CarLength)];
             GeneratedCarTimeStamp(Lane) = time + SpawnThreshold + rand;
         end
     end
@@ -106,9 +111,9 @@ while (time < SimulationTime)
         
         VehicleList = PathPlanning(VehicleList,laneWidth,IntersectionBounds,TurnSpace,Vmax,TransmitLine,StepTime);
         
-        VehicleList = ACC(VehicleList,CarLength,amin);               % Adaptive Cruise Control
+        VehicleList = ACC(VehicleList,amin);               % Adaptive Cruise Control
         
-        VehicleList = vehicleDynamics(VehicleList,L,StepTime,amax,amin,time,method,TransmitLine,Vmax,Vmin,IntersectionBounds,CarLength);
+        VehicleList = vehicleDynamics(VehicleList,L,StepTime,amax,amin,time,method,TransmitLine,Vmax,Vmin,IntersectionBounds);
         
     end
     
@@ -144,7 +149,7 @@ while (time < SimulationTime)
     
     for iteration = 1 : ComputationSpeedFactor
         [Network, RequestedVehiclesListNew] = IntersectionManagement(Network, RequestedVehiclesList,...
-        Vmax,Vmin,laneWidth,TransmitLine,time,CarLength,WCRTD,WCND,Log,method,IMWidth);
+        Vmax,Vmin,laneWidth,TransmitLine,time,WCRTD,WCND,Log,method,IMWidth);
         RequestedVehiclesList = RequestedVehiclesListNew;
     end
     
@@ -157,13 +162,13 @@ while (time < SimulationTime)
         ax = gcf;
         text(-100,-100,num2str(time))
         if print3D == 1
-            drawVehicle3D(VehicleList,CarLength,CarWidth,printLabel)
+            drawVehicle3D(VehicleList,CarWidth,printLabel)
             drawIM3D(IntersectionBounds,TransmitLine,laneWidth)
             zlim([0 40]);
             view(30,85)
             ax.Position = [438 300 1245 604];
         else 
-            drawVehicle(VehicleList,CarLength,CarWidth,printLabel)
+            drawVehicle(VehicleList,CarWidth,printLabel)
             drawIM(IntersectionBounds,TransmitLine,laneWidth,method,time,timer,YL)
             ax.Position = [123 18 1281 963];
         end

@@ -1,4 +1,4 @@
-function [Network,RequestedVehiclesList] = IntersectionManagement(Network,RequestedVehiclesListPrevious,Vmax,Vmin,laneWidth,TransmitLine,TIME,CarLength,WCRTD,WCND,Log,method,IMWidth)
+function [Network,RequestedVehiclesList] = IntersectionManagement(Network,RequestedVehiclesListPrevious,Vmax,Vmin,laneWidth,TransmitLine,TIME,WCRTD,WCND,Log,method,IMWidth)
 if strcmp(method , 'Crossroads')
     RequestedVehiclesList = RequestedVehiclesListPrevious;  % keep track of vehicles
     arc = 2 * pi * (3.5*laneWidth) /4;
@@ -17,6 +17,7 @@ if strcmp(method , 'Crossroads')
                %% Unmarshaling the packet
                ID = Packet.ID;
                Lane = Packet.msg.lane;
+               CarLength = Packet.msg.CarLength;
                timestamp = Packet.msg.timestamp;
                x1 = Packet.msg.position.x;
                y1 = Packet.msg.position.y;

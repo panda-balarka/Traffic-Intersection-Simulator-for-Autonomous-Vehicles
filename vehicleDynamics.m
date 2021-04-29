@@ -1,4 +1,4 @@
-function VehicleList = vehicleDynamics(VehicleList,L,h,amax,amin,time,method,TransmitLine,Vmax,Vmin,IntersectionBounds,CarLength)
+function VehicleList = vehicleDynamics(VehicleList,L,h,amax,amin,time,method,TransmitLine,Vmax,Vmin,IntersectionBounds)
 if strcmp(method,'Crossroads')
     Kp = 0.5/h;
     Ki = 0.05/h;
@@ -23,10 +23,6 @@ if strcmp(method,'Crossroads')
 
             VehicleList(i).integralError = integralError;
         end
-
-
-
-
 
         %% Differential Eq.
         if sai > pi/4
@@ -167,7 +163,7 @@ elseif strcmp(method,'TrafficLight')
 %         desiredSpeed = v;
         Lane = VehicleList(i).lane;
         stopTime = -v/amin;
-        stopDistance = 0.5*amin*stopTime^2+v*stopTime+CarLength/2;
+        stopDistance = 0.5*amin*stopTime^2+v*stopTime+VehicleList(i).length;
 %         desiredSpeed = v;
         timer = 60;
         t=rem(time,timer);
