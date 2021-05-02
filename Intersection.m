@@ -6,9 +6,9 @@ clear all;
 close all;
 % v = VideoWriter('mohi.avi');          % for video capturing
 % open(v);                              % for video capturing
-rng(444);                                % load random number generator with seed = 4444;
+rng(4444);                                % load random number generator with seed = 4444;
 % Parameters
-SimulationTime = 400;       % Seconds
+SimulationTime = 120;       % Seconds
 timer = 60;     % traffic light timer period
 YL=4;           % yellow time    
 StepTime = 0.05;            % Seconds
@@ -35,16 +35,17 @@ printStep = 2;
 printLabel = 2;         %% no print = 0, print ID = 1, print Speed = 2;
 print3D = 0;            %% 3D = 1, 2D = 0;
 %% Intersection Manager
-method = 'Crossroads';
+% method = 'Crossroads';
+method = "CpsProject";
 % method = 'RIM';
 % method = 'TrafficLight';
-projEnable = 1;  %% flag to enable CPS Project IM algorithms and simulation
 ComputationSpeedFactor = 10;
 RequestedVehiclesList = [];
 Vmax = 15;
 Vmin = 2;
 %% Car Parameters
-if projEnable == 1
+varyCarSize = 1;
+if varyCarSize == 1
     CarLength = [4*1,6*1,8*1];  %% Different vehicle length consideration in Project
 else
     CarLength = 6*1;
@@ -55,7 +56,7 @@ amax = 5;
 amin = -6;
 minSpeed = 5;
 maxSpeed = 15;
-CarGenerationDuration = SimulationTime - 100;
+CarGenerationDuration = SimulationTime - 20;
 %% Network
 Log = 1;            % 1 for logging all packets
 %% Simulation
@@ -149,7 +150,7 @@ while (time < SimulationTime)
     
     for iteration = 1 : ComputationSpeedFactor
         [Network, RequestedVehiclesListNew] = IntersectionManagement(Network, RequestedVehiclesList,...
-        Vmax,Vmin,laneWidth,TransmitLine,time,WCRTD,WCND,Log,method,IMWidth);
+        IntersectionBounds,Vmax,Vmin,amax,laneWidth,TransmitLine,time,WCRTD,WCND,Log,method,IMWidth);
         RequestedVehiclesList = RequestedVehiclesListNew;
     end
     
@@ -184,8 +185,8 @@ while (time < SimulationTime)
     elpsed1(count+1)=toc;
     
 end
-drawIM(IntersectionBounds,TransmitLine,laneWidth)
+drawIM(IntersectionBounds,TransmitLine,laneWidth,method,time,timer,YL)
 axis ([IntersectionBounds.xb1-10 IntersectionBounds.xb4+10 IntersectionBounds.yb1-10 IntersectionBounds.yb4+10])
 % disp(failures)
-% sum (averageDelay)
+sum (averageDelay/c1)
 % close(v);                         % for video capturing

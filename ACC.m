@@ -14,7 +14,7 @@ for i = 1:length(VehicleList)-1
         LaneF = VehicleList(j).lane;
         distance = sqrt((xF-xR)^2+(yF-yR)^2);
         reachTime = -(vR-vF)/amin;
-        reachDistance = 0.5*amin*reachTime^2+vR*reachTime + VehicleList(i).length;
+        reachDistance = 0.5*amin*reachTime^2+vR*reachTime + VehicleList(i).length*2;
         if (LaneR == LaneF) && (distance < reachDistance)
             VehicleList(i).desiredSpeed = vF;
         end

@@ -1,5 +1,5 @@
 function VehicleList = vehicleDynamics(VehicleList,L,h,amax,amin,time,method,TransmitLine,Vmax,Vmin,IntersectionBounds)
-if strcmp(method,'Crossroads')
+if strcmp(method,'Crossroads') || strcmp(method,'CpsProject')
     Kp = 0.5/h;
     Ki = 0.05/h;
     Kd = 0.000001/h;
@@ -33,7 +33,7 @@ if strcmp(method,'Crossroads')
         end
         xnew = x + h * (v .* cos( phi ));
         ynew = y + h * (v .* sin( phi ));
-        phinew = phi + h * ((v / L) .* tan( sai ));
+        phinew = phi + h * ((v / min(VehicleList(i).length-1,6)) .* tan( sai ));
         if a > amax
             a = amax;
         end
@@ -47,7 +47,7 @@ if strcmp(method,'Crossroads')
         VehicleList(i).speed = vnew;
         VehicleList(i).sai = sai;
         VehicleList(i).acceleration = a;
-        VehicleList(i).previousSpeed = v;
+        VehicleList(i).previousSpeed = v;       
     end
 elseif strcmp(method,'RIM')
     Kpp = 0.5/h;

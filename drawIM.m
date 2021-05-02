@@ -28,6 +28,10 @@ line([xb3+TransmitLine xb3+TransmitLine],[yb2 yb3],'Color',[0.1 0.2 0.9],'LineSt
 line([xb2 xb3],[yb2-TransmitLine yb2- TransmitLine],'Color',[0.1 0.2 0.9],'LineStyle','--')
 line([xb2 xb3],[yb3+TransmitLine yb3+TransmitLine],'Color',[0.1 0.2 0.9],'LineStyle','--')
 
+text(xb4-laneWidth*6,yb4-laneWidth*6,"Method: " + method);
+
+
+
 if strcmp(method,'TrafficLight')
     t = rem(time,timer);
     if ((t>0 && t<YL/2) || (t>timer/2-YL/2 && t<timer))
