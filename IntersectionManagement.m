@@ -364,6 +364,7 @@ elseif strcmp(method , 'CpsProject')
                     % with any existing vehicles in the Intersection
                     tempVelocity = Vmax;
                     tAccMax = (Vmax-v1)/amax;
+                    velList = [tempVelocity];
                     while (1)
                         collisionFlag = 0;
                         % Calculate ETOA for assumed velocity
@@ -382,7 +383,7 @@ elseif strcmp(method , 'CpsProject')
                             if ~distCollisionRequestVehicle == 0 && ~distCollisionReferenceVehicle == 0
                                 timeCollision = refETOA + (distCollisionReferenceVehicle+CarLength/2)/assignedVelocity2;
                                 
-                                safetyTimeBuffer = (RequestedVehiclesList(jj).length/2)/Vmax;
+                                safetyTimeBuffer = (RequestedVehiclesList(jj).length)/Vmax;
                                 % if the current ETOA is already greater than the collision time for the projected trajectories, then we do not need
                                 % to check anything even if trajectory lines interesect
                                 if ETOA < timeCollision - safetyTimeBuffer
@@ -399,12 +400,16 @@ elseif strcmp(method , 'CpsProject')
                                         % total distance car has covered leading to collision
                                         originalTotalDist = TransmitLine + distProjection;
                                         % distance it should be at to avoid collision
-                                        safeTotalDist = originalTotalDist - (distCollisionRequestVehicle + RequestedVehiclesList(jj).length/2 + CarLength/2 + safetyDistBuffer);
+                                        safeTotalDist = originalTotalDist - (distCollisionRequestVehicle + RequestedVehiclesList(jj).length + CarLength + safetyDistBuffer);
                                         timeOfTransit_withNewVelocity = timeCollision - timestamp - WCRTD - tAccMax - Network(ii).delay;
                                         % the car not has to travel the safeTotalDist in this time of Transit instead of the original distance to avoid collision
                                         commonCoveredDistance = distOffset_req2TL + v1*WCRTD + distAcc;
                                         referenceDist = safeTotalDist - commonCoveredDistance;
                                         tempVelocity = referenceDist/timeOfTransit_withNewVelocity;
+                                        if tempVelocity >= velList(length(velList))
+                                            tempVelocity = min(velList) - 0.5;
+                                        end
+                                        velList = [velList;tempVelocity];                                         
                                     end
                                 end
                             end

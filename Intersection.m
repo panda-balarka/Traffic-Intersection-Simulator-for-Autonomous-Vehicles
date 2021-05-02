@@ -6,9 +6,9 @@ clear all;
 close all;
 % v = VideoWriter('mohi.avi');          % for video capturing
 % open(v);                              % for video capturing
-rng(4444);                                % load random number generator with seed = 4444;
+rng(444);                                % load random number generator with seed = 4444;
 % Parameters
-SimulationTime = 120;       % Seconds
+SimulationTime = 200;       % Seconds
 timer = 60;     % traffic light timer period
 YL=4;           % yellow time    
 StepTime = 0.05;            % Seconds
