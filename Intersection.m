@@ -8,7 +8,7 @@ close all;
 % open(v);                              % for video capturing
 rng(444);                                % load random number generator with seed = 4444;
 % Parameters
-SimulationTime = 200;       % Seconds
+SimulationTime = 100;       % Seconds
 timer = 60;     % traffic light timer period
 YL=4;           % yellow time    
 StepTime = 0.05;            % Seconds
@@ -44,6 +44,8 @@ RequestedVehiclesList = [];
 Vmax = 15;
 Vmin = 2;
 %% Car Parameters
+% Enable below flag to have varying vehicle size in CpsProject
+% Implementation
 varyCarSize = 1;
 if varyCarSize == 1
     CarLength = [4*1,6*1,8*1];  %% Different vehicle length consideration in Project

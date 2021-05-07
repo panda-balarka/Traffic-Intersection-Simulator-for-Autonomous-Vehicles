@@ -316,23 +316,25 @@ if strcmp(method , 'Crossroads')
         end
         i = i + 1;
     end
+% code for CpsProject method of Crossroads IM
 elseif strcmp(method , 'CpsProject')
     RequestedVehiclesList = RequestedVehiclesListPrevious;  % keep track of vehicles
 
+    % check if there are requests on the network
     if ~isempty(Network)
         ii = 1;
         found = 0;  % do one scheduling per IM round
         while (ii <= length(Network)) && (found == 0)
             if strcmp(Network(ii).to, 'IM') && TIME >  Network(ii).delay + Network(ii).msg.timestamp     % delay in the network condition 
                 %% Get data sent from Vehicle 
-                ID = Network(ii).ID; 
-                Lane = Network(ii).msg.lane; 
-                CarLength = Network(ii).msg.CarLength;   
+                ID = Network(ii).ID;                     % Vehicle ID
+                Lane = Network(ii).msg.lane;             % Entry Lane of Request Vehicle
+                CarLength = Network(ii).msg.CarLength;   % Length of Request Vehicle   
                 timestamp = Network(ii).msg.timestamp;   % This is the time when the vehicle transmitted the packet for Intersection Scheduling
                 x1 = Network(ii).msg.position.x;         % x co-ordinate of the vehicle at request transmission
                 y1 = Network(ii).msg.position.y;         % y co-ordinate of the vehicle at request transmission 
                 v1 = Network(ii).msg.speed;              % velocity of vehicle at request transmission
-                DestinationLane1 = Network(ii).msg.DestinationLane;              
+                DestinationLane1 = Network(ii).msg.DestinationLane; % Exit Lane of Request Vehicle             
                 % Calculate the offset in the respective distance of the car from the transmit line when the actual request is generated
                 distOffset_req2TL = 0;
                 distWCRTD = WCRTD * v1;
@@ -354,23 +356,28 @@ elseif strcmp(method , 'CpsProject')
                 car.DestinationLane = DestinationLane1;
                 %% IM management code
                 if isempty(RequestedVehiclesList)
+                    % VOA is max velocity if there are no requests in queue
                     assignedVelocity = Vmax;
                     distAcc = (Vmax^2 - v1^2)/(2*amax);
                     ETOA = timestamp + (Vmax-v1)/amax + (TransmitLine - distOffset_req2TL - distAcc - distWCRTD + CarLength/2)/Vmax; 
                 else
                     % The in out lane pair of the vehicle requesting scheduling
                     inOut_current = [car.lane car.DestinationLane];
-                    % start with maximum velocity and then decrease by velocity gradient factor if we have a collision in trajectory projection 
+                    % start with maximum velocity and then decrease by velocity by calculating safeDistance for avoiding collision
                     % with any existing vehicles in the Intersection
                     tempVelocity = Vmax;
                     tAccMax = (Vmax-v1)/amax;
                     velList = [tempVelocity];
                     while (1)
                         collisionFlag = 0;
-                        % Calculate ETOA for assumed velocity
+                        % distance covered to accelerate at assumed velocity
                         distAcc = (tempVelocity^2 - v1^2)/(2*amax);
-                        ETOA = timestamp + (tempVelocity-v1)/amax + (TransmitLine - distOffset_req2TL - distAcc - distWCRTD - CarLength/2)/tempVelocity;                        
+                        % ETOA for assumed velocity
+                        ETOA = timestamp + (tempVelocity-v1)/amax + (TransmitLine - distOffset_req2TL - distAcc - distWCRTD - CarLength/2)/tempVelocity;       
+                        
+                        % check for collision with all vehicles in queue that are yet to exit the IM
                         for jj = 1:length(RequestedVehiclesList)
+                            % reference vehicle information retrieved from queue
                             lane2 = RequestedVehiclesList(jj).lane;
                             DestinationLane2 = RequestedVehiclesList(jj).DestinationLane;
                             assignedVelocity2 = RequestedVehiclesList(jj).assigned;
@@ -378,9 +385,12 @@ elseif strcmp(method , 'CpsProject')
 
                             inOut_reference = [lane2 DestinationLane2];  
                             Combination = [inOut_current inOut_reference];
+                            % get the collision points from the collision matrix
                             [distCollisionRequestVehicle,distCollisionReferenceVehicle] = collisionDistanceIM(Combination,laneWidth);
                             % if the trajectories are non interesecting, then we do not need to change assumed velocity
                             if ~distCollisionRequestVehicle == 0 && ~distCollisionReferenceVehicle == 0
+                                % worst case time of collision is reference ETOA plus the distance to the collision point from the IM boundary plus reference vehicles length/2 as
+                                % we have a circle of car length/2
                                 timeCollision = refETOA + (distCollisionReferenceVehicle+CarLength/2)/assignedVelocity2;
                                 
                                 safetyTimeBuffer = (RequestedVehiclesList(jj).length)/Vmax;
@@ -400,16 +410,19 @@ elseif strcmp(method , 'CpsProject')
                                         % total distance car has covered leading to collision
                                         originalTotalDist = TransmitLine + distProjection;
                                         % distance it should be at to avoid collision
-                                        safeTotalDist = originalTotalDist - (distCollisionRequestVehicle + RequestedVehiclesList(jj).length + CarLength + safetyDistBuffer);
+                                        safeTotalDist = originalTotalDist - (distCollisionRequestVehicle + RequestedVehiclesList(jj).length/2 + CarLength/2 + safetyDistBuffer);
                                         timeOfTransit_withNewVelocity = timeCollision - timestamp - WCRTD - tAccMax - Network(ii).delay;
                                         % the car not has to travel the safeTotalDist in this time of Transit instead of the original distance to avoid collision
                                         commonCoveredDistance = distOffset_req2TL + v1*WCRTD + distAcc;
                                         referenceDist = safeTotalDist - commonCoveredDistance;
+                                        % compute new safe velocity
                                         tempVelocity = referenceDist/timeOfTransit_withNewVelocity;
+                                        % handle velocity bounce between values in case of multiple collision hits
                                         if tempVelocity >= velList(length(velList))
                                             tempVelocity = min(velList) - 0.5;
                                         end
-                                        velList = [velList;tempVelocity];                                         
+                                        velList = [velList;tempVelocity]; 
+                                        disp(['Possible Collision of Request Vehicle ID = ',num2str(ID),' with ID= ',num2str(RequestedVehiclesList(jj).ID),' @Time= ', num2str(timeCollision),' Changed Velcity to ', num2str(tempVelocity),' to avoid Collision']);                                        
                                     end
                                 end
                             end
@@ -423,7 +436,7 @@ elseif strcmp(method , 'CpsProject')
                 end              
                 %% Delete The First Packet in the Queue
                 Network(ii) = [];
-                %% Marshaling the response packet
+                %% Fill the response packet
                 if assignedVelocity < Vmin
                     error('Facing traffic JAM!')
                 end
@@ -438,10 +451,12 @@ elseif strcmp(method , 'CpsProject')
                 ResponsePacket.msg.IMWidth = IMWidth;
                 car.TimeOfRequest = timestamp;
                 car.finished = 0;
+                % load response to network
                 Network = [Network;ResponsePacket];
                 if Log == 1
                     disp(['A packet from IM to ID =',num2str(ID),' V=',num2str(assignedVelocity),' Tactuation=', num2str(timestamp+WCRTD)]);
                 end
+                % update IM queue
                 RequestedVehiclesList = [RequestedVehiclesList;car];
                 found = 1;                    
             end
