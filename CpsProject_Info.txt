@@ -1,0 +1,27 @@
+The original repo has been forked for the purpose of this project at the commit b59b62285eb51f47c23988c4c382df988084ad6b. 
+That is before Crossroads was updated to two implementations of Crossroads: The original and Crossroads +. To avoid confusion 
+repo is forked with a commit containing the Original Crossroads with other models from the Original Authors.
+
+Link to Github Repository for CPS Project:
+https://github.com/panda-balarka/Traffic-Intersection-Simulator-for-Autonomous-Vehicles.git
+
+The following commits have the changes done for CPS Project:
+3d272a051715e8404d766ea496da6a07e412a787
+0ac3eef6a7981a41952db168a9bd58f5826f59fd
+266742ea3878584c219f7fbd164ebca02056c416
+6a63153794d45aedcce19889e8115e13b9187cd5
+
+The following files have been adjusted from the original Repo to implement CpsProject:
+-> ACC.m
+-> Intersection.m
+-> IntersectionManagement.m
+-> drawIM.m
+-> SendToNetwork.m
+-> drawVehicle.m
+-> drawVehicle3D.m
+-> generateCar.m
+-> vehicleDynamics.m
+
+USE OF FLAGS:
+Please set method to "CpsProject" in Intersection.m to run the Project Implementation (The last commit has this by default)
+Please set varyCarSize to 1 to enable variable size vehicle generation.
